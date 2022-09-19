@@ -141,7 +141,10 @@ class MultiZarrToZarr:
             logger.debug("setup filesystems")
             if isinstance(self.path[0], collections.abc.Mapping):
                 fo_list = self.path
-                self._paths = [None] * len(fo_list)
+                # self._paths = [None] * len(fo_list)
+                self._paths = [] # monkey patch -- the above line does not pull in file names
+                for path in self.path:
+                    self._paths.append(path["templates"]["u"])
             else:
                 self._paths = []
                 for of in fsspec.open_files(self.path, **self.target_options):
@@ -181,7 +184,8 @@ class MultiZarrToZarr:
         elif isinstance(selector, list):
             o = selector[index]
         elif isinstance(selector, re.Pattern):
-            o = selector.match(fn).groups()[0]  # may raise
+            # o = selector.match(fn).groups()[0]  # may raise
+            o = re.search(selector,fn)[0] # monkey patch -- match only looks from the beginning of the string, search looks at the entire string
         elif not isinstance(selector, str):
             # constant, should be int or float
             o = selector

@@ -244,7 +244,14 @@ class SingleHdf5ToZarr:
                         fill = " "
                     else:
                         raise NotImplementedError
-                elif _is_netcdf_datetime(h5obj):
+                # elif _is_netcdf_datetime(h5obj):
+                #     fill = None
+                elif h5obj.dtype.kind in "i": # monkey patch to account for non-DT integer dtypes
+                    try:
+                        _is_netcdf_datetime(h5obj)
+                    except TypeError:
+                        lggr.debug(f"No units found, this is probably not a datetime")
+                        pass
                     fill = None
                 else:
                     fill = h5obj.fillvalue
